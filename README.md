@@ -468,17 +468,103 @@ curl -H "Authorization: Bearer <token>" \
 
 ## Testing
 
-Run the test suite:
+This project includes comprehensive unit and feature tests using Laravel's built-in testing framework.
 
+### Test Coverage
+
+| Test Suite | Coverage |
+|------------|----------|
+| **Feature Tests** | API endpoints, authentication, exports |
+| **Unit Tests** | Model relationships, constraints |
+
+### Running Tests
+
+#### Run All Tests
 ```bash
-# Run all tests
 php artisan test
+```
 
-# Run specific test
+#### Run Specific Test Suite
+```bash
+# Feature tests only
+php artisan test --suite=Feature
+
+# Unit tests only
+php artisan test --suite=Unit
+```
+
+#### Run Specific Test
+```bash
+# By test class name
 php artisan test --filter=TranslationJsonExportTest
 
-# Run with coverage
+# By method name
+php artisan test --filter=test_export_json_returns_200
+```
+
+#### Run with Coverage
+```bash
+# With HTML coverage report
+php artisan test --coverage --coverage-html
+
+# With text output
 php artisan test --coverage
+```
+
+### Test Files
+
+| File | Description |
+|------|-------------|
+| `tests/Feature/TranslationJsonExportTest.php` | JSON export endpoint tests |
+| `tests/Feature/TranslationApiTest.php` | Translation CRUD tests |
+| `tests/Feature/LocaleApiTest.php` | Locale CRUD tests |
+| `tests/Feature/TagApiTest.php` | Tag CRUD tests |
+| `tests/Feature/AuthTest.php` | Authentication tests |
+| `tests/Unit/TranslationModelTest.php` | Translation model tests |
+| `tests/Unit/LocaleModelTest.php` | Locale model tests |
+| `tests/Unit/TagModelTest.php` | Tag model tests |
+
+### Test Environment
+
+Tests run using SQLite in-memory database (configured in `phpunit.xml`):
+
+```xml
+<env name="DB_CONNECTION" value="sqlite"/>
+<env name="DB_DATABASE" value=":memory:"/>
+```
+
+This ensures tests are fast and isolated - no real database required.
+
+### Writing Tests
+
+Example of a basic test:
+
+```php
+public function test_can_list_translations(): void
+{
+    $locale = Locale::create(['code' => 'en', 'name' => 'English']);
+    Translation::create(['locale_id' => $locale->id, 'key' => 'hello', 'content' => 'Hello']);
+
+    $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
+        ->getJson('/api/translations');
+
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'data' => ['*' => ['id', 'key', 'content']]
+    ]);
+}
+```
+
+### Performance Tests
+
+The project includes performance tests to ensure export endpoints meet the <500ms requirement:
+
+```bash
+# Run performance tests
+php artisan test --filter=Performance
+
+# Or run specific test
+php artisan test --filter=test_export_json_performance_is_under_500ms
 ```
 
 ---
