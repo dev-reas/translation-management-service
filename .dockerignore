@@ -1,0 +1,17 @@
+.git
+.gitignore
+node_modules
+/vendor
+/.env
+/.env.backup
+/.env.example
+/storage/logs
+/storage/framework/cache
+/storage/framework/sessions
+/storage/framework/views
+/.idea
+/.vscode
+*.md
+docker-compose.yml
+Dockerfile
+.docker

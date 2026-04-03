@@ -22,8 +22,8 @@ class TranslationController
     {
         $filters = $request->only(['key', 'content', 'locale_id', 'locale_code', 'tag']);
 
-        $perPage = min((int)$request->input('per_page', 20), 100);
-        $page = (int)$request->input('page', 1);
+        $perPage = min((int) $request->input('per_page', 20), 100);
+        $page = (int) $request->input('page', 1);
 
         $translations = $action->execute($filters, $perPage, $page);
 
@@ -56,8 +56,7 @@ class TranslationController
             $translation = $action->execute($id, $data);
 
             return ResponseService::updated(new TranslationResource($translation));
-        }
-        catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return ResponseService::notFound('Translation not found');
         }
     }
@@ -72,8 +71,7 @@ class TranslationController
             }
 
             return ResponseService::deleted('Translation deleted successfully');
-        }
-        catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return ResponseService::notFound('Translation not found');
         }
     }
@@ -81,31 +79,32 @@ class TranslationController
     {
         $localeCode = $request->input('locale_code');
         $cacheKey = "translations_export_" . ($localeCode ?? 'all');
-        
+
         $filename = $localeCode ? "translations_{$localeCode}.json" : 'translations_all.json';
-        
+
         $headers = [
             'Content-Type' => 'application/json',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
-        
+
         $callback = function () use ($localeCode, $cacheKey) {
             $cachedData = Cache::get($cacheKey);
-            
+
             if ($cachedData !== null) {
                 echo json_encode($cachedData, JSON_UNESCAPED_UNICODE);
                 return;
             }
-            
+
+            $translations = [];
+
             if ($localeCode) {
                 $rows = DB::table('translations as t')
                     ->join('locales as l', 't.locale_id', '=', 'l.id')
                     ->where('l.code', $localeCode)
                     ->select('t.key', 't.content')
-                    ->orderBy('t.id')
+                    ->orderBy('t.key')
                     ->get();
-                
-                $translations = [];
+
                 foreach ($rows as $row) {
                     $translations[$row->key] = $row->content;
                 }
@@ -114,10 +113,9 @@ class TranslationController
                     ->join('locales as l', 't.locale_id', '=', 'l.id')
                     ->select('l.code as locale', 't.key', 't.content')
                     ->orderBy('l.code')
-                    ->orderBy('t.id')
+                    ->orderBy('t.key')
                     ->get();
-                
-                $translations = [];
+
                 foreach ($rows as $row) {
                     if (!isset($translations[$row->locale])) {
                         $translations[$row->locale] = [];
@@ -132,7 +130,7 @@ class TranslationController
             ];
 
             Cache::put($cacheKey, $data, now()->addMinutes(5));
-            
+
             echo json_encode($data, JSON_UNESCAPED_UNICODE);
         };
 
