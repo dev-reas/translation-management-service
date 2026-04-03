@@ -257,7 +257,7 @@ curl -H "Authorization: Bearer <token>" \
 > 
 > **Why Security Impacts Speed:**
 > 
-> We prioritize **security over speed** by:
+>I prioritize **security over speed** by:
 > 
 > - Using Laravel Sanctum for token-based authentication on every request
 > - Validating the user's authorization before processing the export
@@ -271,7 +271,7 @@ curl -H "Authorization: Bearer <token>" \
 > 
 > **Our Solution:**
 > 
-> We implemented a **5-minute caching mechanism** to ensure fast response times while maintaining security:
+> I implemented a **5-minute caching mechanism** to ensure fast response times while maintaining security:
 > 
 > - **First request**: ~300-500ms (database query + authentication + cache storage)
 > - **Subsequent requests**: <10ms (served from cache after auth check)
